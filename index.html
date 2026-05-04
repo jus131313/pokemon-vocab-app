@@ -3,42 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokemon 識字大冒險</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Pokemon 識字大冒險 - 3D版</title>
+    <style>
+        /* --- 冒險感 CSS 樣式 --- */
+        :root {
+            --primary-red: #ff1f1f;
+            --pokemon-blue: #31a7d7;
+            --pokemon-yellow: #f6bd20;
+            --glass: rgba(255, 255, 255, 0.25);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            /* 模仿 Pokemon XY 嘅青空背景 */
+            background: linear-gradient(180deg, #4da0b0 0%, #d39d38 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* 頂部 HUD */
+        .hud {
+            position: absolute;
+            top: 20px;
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: 2px solid var(--pokemon-yellow);
+        }
+
+        #progress-bar-container {
+            width: 150px;
+            height: 15px;
+            background: #444;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background: var(--pokemon-yellow);
+            transition: width 0.3s;
+        }
+
+        /* 3D 舞台 */
+        #card-stage {
+            perspective: 1000px;
+            margin: 40px 0;
+        }
+
+        .card-3d {
+            width: 280px;
+            height: 380px;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            transform: rotateX(10deg);
+            transition: all 0.3s ease;
+        }
+
+        #vocab-text {
+            font-size: 3.5rem;
+            text-shadow: 2px 4px 10px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+        }
+
+        /* 冒險掣 */
+        #options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .btn-3d {
+            background: var(--pokemon-blue);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px #21789c, 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.1s;
+        }
+
+        .btn-3d:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px #21789c;
+        }
+
+        /* 進化動畫疊加層 */
+        #evo-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: none; /* 預設隱藏 */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            color: #333;
+        }
+
+        .evolving {
+            animation: evo-pulse 0.4s infinite alternate;
+        }
+
+        @keyframes evo-pulse {
+            from { transform: scale(1); filter: brightness(1); }
+            to { transform: scale(1.1); filter: brightness(2); }
+        }
+
+        .flash {
+            position: absolute;
+            width: 100%; height: 100%;
+            background: white;
+            animation: flash-anim 0.5s ease-out;
+        }
+
+        @keyframes flash-anim {
+            0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; }
+        }
+    </style>
 </head>
 <body>
-    <div id="game-container">
-        <!-- 頂部資訊欄 -->
-        <div class="hud">
-            <div id="level-indicator">LEVEL: <span id="current-level">1</span></div>
-            <div id="progress-bar-container">
-                <div id="progress-bar"></div>
-            </div>
-        </div>
 
-        <!-- 3D 識字卡 -->
-        <div id="card-stage">
-            <div id="vocab-card" class="card-3d">
-                <h1 id="vocab-text">Apple</h1>
-            </div>
-        </div>
-
-        <!-- 選擇按鈕 -->
-        <div id="options-grid">
-            <button class="btn-3d" onclick="checkAnswer(0)">蘋果</button>
-            <button class="btn-3d" onclick="checkAnswer(1)">香蕉</button>
-            <button class="btn-3d" onclick="checkAnswer(2)">橙</button>
-        </div>
-
-        <!-- 進化動畫遮罩層 -->
-        <div id="evo-overlay" class="hidden">
-            <div class="evo-white-flash"></div>
-            <div class="evo-content">
-                <div id="evo-target"></div>
-                <h2 id="evo-message">進步中...</h2>
-            </div>
+    <div class="hud">
+        <div>LEVEL: <span id="current-level">1</span></div>
+        <div id="progress-bar-container">
+            <div id="progress-bar"></div>
         </div>
     </div>
-    <script src="script.js"></script>
+
+    <div id="card-stage">
+        <div id="vocab-card" class="card-3d">
+            <h1 id="vocab-text">Apple</h1>
+        </div>
+    </div>
+
+    <div id="options-grid">
+        <button class="btn-3d" onclick="handleAnswer()">蘋果</button>
+        <button class="btn-3d" onclick="handleAnswer()">香蕉</button>
+        <button class="btn-3d" onclick="handleAnswer()">橙</button>
+    </div>
+
+    <!-- 進化畫面 -->
+    <div id="evo-overlay">
+        <div id="evo-flash-container"></div>
+        <h1 style="font-size: 3rem;">進步中...</h1>
+        <p>你嘅詞彙量正在進化！</p>
+    </div>
+
+    <script>
+        let count = 0;
+        let level = 1;
+
+        function handleAnswer() {
+            count++;
+            const progress = (count / 5) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+
+            if (count >= 5) {
+                startEvolution();
+            }
+        }
+
+        function startEvolution() {
+            const overlay = document.getElementById('evo-overlay');
+            const card = document.getElementById('vocab-card');
+            
+            overlay.style.display = 'flex';
+            card.classList.add('evolving');
+
+            setTimeout(() => {
+                // 觸發閃光
+                const flash = document.createElement('div');
+                flash.className = 'flash';
+                document.getElementById('evo-flash-container').appendChild(flash);
+
+                setTimeout(() => {
+                    level++;
+                    count = 0;
+                    document.getElementById('current-level').innerText = level;
+                    document.getElementById('progress-bar').style.width = '0%';
+                    
+                    overlay.style.display = 'none';
+                    card.classList.remove('evolving');
+                    flash.remove();
+                }, 500);
+            }, 2000);
+        }
+    </script>
 </body>
 </html>
