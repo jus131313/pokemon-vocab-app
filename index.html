@@ -1,215 +1,239 @@
 <!DOCTYPE html>
-<html lang="zh-HK">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokemon 識字大冒險 - 3D版</title>
+    <title>小精靈認字特訓</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-        /* --- 冒險感 CSS 樣式 --- */
-        :root {
-            --primary-red: #ff1f1f;
-            --pokemon-blue: #31a7d7;
-            --pokemon-yellow: #f6bd20;
-            --glass: rgba(255, 255, 255, 0.25);
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            /* 模仿 Pokemon XY 嘅青空背景 */
-            background: linear-gradient(180deg, #4da0b0 0%, #d39d38 100%);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden;
-            color: white;
-        }
-
-        /* 頂部 HUD */
-        .hud {
-            position: absolute;
-            top: 20px;
-            width: 90%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px 20px;
-            border-radius: 15px;
-            border: 2px solid var(--pokemon-yellow);
-        }
-
-        #progress-bar-container {
-            width: 150px;
-            height: 15px;
-            background: #444;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        #progress-bar {
-            width: 0%;
-            height: 100%;
-            background: var(--pokemon-yellow);
-            transition: width 0.3s;
-        }
-
-        /* 3D 舞台 */
-        #card-stage {
-            perspective: 1000px;
-            margin: 40px 0;
-        }
-
-        .card-3d {
-            width: 280px;
-            height: 380px;
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            border: 3px solid rgba(255, 255, 255, 0.5);
-            border-radius: 25px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-            transform: rotateX(10deg);
-            transition: all 0.3s ease;
-        }
-
-        #vocab-text {
-            font-size: 3.5rem;
-            text-shadow: 2px 4px 10px rgba(0,0,0,0.3);
-            letter-spacing: 2px;
-        }
-
-        /* 冒險掣 */
-        #options-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-
-        .btn-3d {
-            background: var(--pokemon-blue);
-            color: white;
-            border: none;
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 6px #21789c, 0 10px 20px rgba(0,0,0,0.2);
-            transition: all 0.1s;
-        }
-
-        .btn-3d:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px #21789c;
-        }
-
-        /* 進化動畫疊加層 */
-        #evo-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: none; /* 預設隱藏 */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-            color: #333;
-        }
-
-        .evolving {
-            animation: evo-pulse 0.4s infinite alternate;
-        }
-
-        @keyframes evo-pulse {
-            from { transform: scale(1); filter: brightness(1); }
-            to { transform: scale(1.1); filter: brightness(2); }
-        }
-
-        .flash {
-            position: absolute;
-            width: 100%; height: 100%;
-            background: white;
-            animation: flash-anim 0.5s ease-out;
-        }
-
-        @keyframes flash-anim {
-            0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; }
-        }
+        @keyframes fade-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+        .pokedex-bg { background-color: #1a1a1a; border: 8px solid #ef4444; }
     </style>
 </head>
-<body>
+<body class="bg-gradient-to-b from-blue-200 to-yellow-100 font-sans text-gray-800 overflow-hidden">
+    <div id="root"></div>
 
-    <div class="hud">
-        <div>LEVEL: <span id="current-level">1</span></div>
-        <div id="progress-bar-container">
-            <div id="progress-bar"></div>
-        </div>
-    </div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-    <div id="card-stage">
-        <div id="vocab-card" class="card-3d">
-            <h1 id="vocab-text">Apple</h1>
-        </div>
-    </div>
+        const THEME_LEVELS = [
+            { id: 1, theme: '水果', iconPokeId: 152, reward: { pokeId: 25, name: '比卡超', drama: ['大木博士：這是你的第一隻小精靈，好好照顧牠！', '比卡超：比卡，比卡！', '你成功與比卡超成為好朋友了！'] }, words: [{ word: '蘋果', emoji: '🍎', hint: '紅紅的，甜甜的' }, { word: '香蕉', emoji: '🍌', hint: '黃色的，彎彎的' }, { word: '西瓜', emoji: '🍉', hint: '綠皮紅肉' }, { word: '芒果', emoji: '🥭', hint: '黃色的熱帶水果' }, { word: '葡萄', emoji: '🍇', hint: '一串串紫色的' }] },
+            { id: 2, theme: '動物', iconPokeId: 133, reward: { pokeId: 10, name: '綠毛蟲', drama: ['在常磐森林發現了綠毛蟲！', '你：去吧，精靈球！', '收服了你靠自己捕捉的第一隻精靈！'] }, words: [{ word: '貓咪', emoji: '🐱', hint: '喵喵叫' }, { word: '狗仔', emoji: '🐶', hint: '人類好朋友' }, { word: '兔子', emoji: '🐰', hint: '愛吃蘿蔔' }, { word: '烏龜', emoji: '🐢', hint: '走得很慢' }, { word: '雀鳥', emoji: '🐦', hint: '在天空中飛' }] },
+            { id: 3, theme: '顏色', iconPokeId: 175, reward: { pokeId: 17, name: '比比鳥', drama: ['天空飛來了一隻強壯的比比鳥！', '比卡超，使用十萬伏特！', '成功收服比比鳥！'] }, words: [{ word: '紅色', emoji: '🔴', hint: '像火一樣' }, { word: '藍色', emoji: '🔵', hint: '像海洋一樣' }, { word: '黃色', emoji: '🟡', hint: '像太陽一樣' }, { word: '綠色', emoji: '🟢', hint: '像草地一樣' }, { word: '黑色', emoji: '⚫', hint: '像夜晚一樣' }] },
+            { id: 4, theme: '身體', iconPokeId: 66, reward: { pokeId: 1, name: '奇異種子', drama: ['奇異種子一直在保護森林。', '牠認可了你的勇敢！', '奇異種子決定跟隨你！'] }, words: [{ word: '眼睛', emoji: '👀', hint: '用來看看世界' }, { word: '耳朵', emoji: '👂', hint: '用來聽聲音' }, { word: '嘴巴', emoji: '👄', hint: '用來吃飯' }, { word: '鼻子', emoji: '👃', hint: '用來聞氣味' }, { word: '牙齒', emoji: '🦷', hint: '用來咬食物' }] },
+            { id: 5, theme: '文具', iconPokeId: 122, reward: { pokeId: 4, name: '小火龍', drama: ['在雨中發現了被遺棄的小火龍...', '你帶牠到中心急救！', '小火龍決定成為你的伙伴！'] }, words: [{ word: '鉛筆', emoji: '✏️', hint: '用來寫字' }, { word: '擦膠', emoji: '🧽', hint: '寫錯字就靠它' }, { word: '間尺', emoji: '📏', hint: '用來畫直線' }, { word: '書本', emoji: '📕', hint: '有很多知識' }, { word: '剪刀', emoji: '✂️', hint: '用來剪紙' }] },
+            { id: 6, theme: '交通', iconPokeId: 131, reward: { pokeId: 7, name: '車厘龜', drama: ['車厘龜軍團在搗亂！', '你幫助牠們撲滅了大火。', '車厘龜老大加入了你的隊伍！'] }, words: [{ word: '巴士', emoji: '🚌', hint: '大型車' }, { word: '港鐵', emoji: '🚇', hint: '在地下跑' }, { word: '飛機', emoji: '✈️', hint: '在天上飛' }, { word: '的士', emoji: '🚕', hint: '紅色的汽車' }, { word: '輪船', emoji: '🚢', hint: '在海面航行' }] },
+            { id: 7, theme: '家人', iconPokeId: 115, reward: { pokeId: 98, name: '大鉗蟹', drama: ['大鉗蟹夾住了你的手！', '好痛啊！丟出精靈球！', '收服了大鉗蟹！'] }, words: [{ word: '爸爸', emoji: '👨', hint: '男主人' }, { word: '媽媽', emoji: '👩', hint: '最照顧我們的人' }, { word: '哥哥', emoji: '👦', hint: '比我大的男孩' }, { word: '姐姐', emoji: '👧', hint: '比我大的女孩' }, { word: '弟弟', emoji: '👶', hint: '比我小的男孩' }] },
+            { id: 8, theme: '天氣', iconPokeId: 351, reward: { pokeId: 89, name: '臭臭泥', drama: ['發電廠被臭泥包圍了！', '這隻首領很強大！', '成功收服臭臭泥！'] }, words: [{ word: '晴天', emoji: '☀️', hint: '大太陽' }, { word: '雨天', emoji: '🌧️', hint: '要帶雨傘' }, { word: '打風', emoji: '🌀', hint: '風很大' }, { word: '多雲', emoji: '☁️', hint: '雲朵遮住太陽' }, { word: '閃電', emoji: '⚡', hint: '天上的光芒' }] },
+            { id: 9, theme: '食物', iconPokeId: 241, reward: { pokeId: 128, name: '肯泰羅', drama: ['來到野生原野區！', '有一群肯泰羅跑過！', '一次過收服了肯泰羅！'] }, words: [{ word: '麵包', emoji: '🍞', hint: '早餐吃' }, { word: '雞蛋', emoji: '🥚', hint: '母雞生出來' }, { word: '牛奶', emoji: '🥛', hint: '喝了長高' }, { word: '飯糰', emoji: '🍙', hint: '紫菜包白飯' }, { word: '麵條', emoji: '🍜', hint: '長長的' }] },
+            { id: 10, theme: '地方', iconPokeId: 151, reward: { pokeId: 143, name: '卡比獸', drama: ['巨大的卡比獸擋住了路。', '吹響精靈之笛！', '卡比獸心滿意足地被收服了！'] }, words: [{ word: '學校', emoji: '🏫', hint: '上課的地方' }, { word: '公園', emoji: '🏞️', hint: '有滑梯' }, { word: '醫院', emoji: '🏥', hint: '看醫生' }, { word: '餐廳', emoji: '🍽️', hint: '吃飯的地方' }, { word: '超市', emoji: '🛒', hint: '買食物' }] },
+            { id: 11, theme: '時間', iconPokeId: 265, reward: { pokeId: 12, name: '巴特蝶', drama: ['你的綠毛蟲進化了！', '牠拍動著美麗翅膀。', '獲得了巴特蝶！'] }, words: [{ word: '早上', emoji: '🌅', hint: '太陽升起' }, { word: '中午', emoji: '☀️', hint: '吃午餐' }, { word: '晚上', emoji: '🌙', hint: '月亮出來' }, { word: '明天', emoji: '📅', hint: '今天之後' }, { word: '星期', emoji: '🗓️', hint: '一週七天' }] },
+            { id: 12, theme: '動作', iconPokeId: 25, reward: { pokeId: 130, name: '鯉魚龍', drama: ['弱小的鯉魚王進化了！', '變兇猛了但仍認得你。', '收服海中王者！'] }, words: [{ word: '走路', emoji: '🚶', hint: '慢慢移動' }, { word: '跑步', emoji: '🏃', hint: '快快移動' }, { word: '跳舞', emoji: '💃', hint: '跟音樂擺動' }, { word: '看書', emoji: '📖', hint: '閱讀文字' }, { word: '唱歌', emoji: '🎤', hint: '發出旋律' }] },
+            { id: 13, theme: '家居', iconPokeId: 122, reward: { pokeId: 122, name: '吸盤小丑', drama: ['家裡出現喜歡做家務的精靈。', '媽媽非常喜歡牠！', '小丑加入了家庭！'] }, words: [{ word: '沙發', emoji: '🛋️', hint: '坐著舒服' }, { word: '電視', emoji: '📺', hint: '看卡通片' }, { word: '冰箱', emoji: '🧊', hint: '保持冰涼' }, { word: '床鋪', emoji: '🛏️', hint: '睡覺的地方' }, { word: '時鐘', emoji: '⏰', hint: '告訴時間' }] },
+            { id: 14, theme: '自然', iconPokeId: 1, reward: { pokeId: 147, name: '迷你龍', drama: ['在傳說中的湖泊釣到了牠。', '是罕見的精靈！', '迷你龍加入了！'] }, words: [{ word: '高山', emoji: '⛰️', hint: '很高地形' }, { word: '森林', emoji: '🌲', hint: '很多樹木' }, { word: '海洋', emoji: '🌊', hint: '無邊大海' }, { word: '花朵', emoji: '🌸', hint: '植物美麗部分' }, { word: '草地', emoji: '🌱', hint: '長滿小草' }] },
+            { id: 15, theme: '反義', iconPokeId: 132, reward: { pokeId: 132, name: '百變怪', drama: ['這隻精靈可以變任何樣。', '你識破了牠的變身！', '百變怪決定跟你學習！'] }, words: [{ word: '大小', emoji: '↕️', hint: '大與小' }, { word: '多少', emoji: '🔢', hint: '多與少' }, { word: '長短', emoji: '📏', hint: '長與短' }, { word: '高矮', emoji: '🗼', hint: '高與矮' }, { word: '快慢', emoji: '🏎️', hint: '快與慢' }] }
+        ];
 
-    <div id="options-grid">
-        <button class="btn-3d" onclick="handleAnswer()">蘋果</button>
-        <button class="btn-3d" onclick="handleAnswer()">香蕉</button>
-        <button class="btn-3d" onclick="handleAnswer()">橙</button>
-    </div>
+        function App() {
+            const [gameState, setGameState] = useState('start');
+            const [currentThemeIndex, setCurrentThemeIndex] = useState(0);
+            const [currentWordIndex, setCurrentWordIndex] = useState(0);
+            const [isListening, setIsListening] = useState(false);
+            const [feedback, setFeedback] = useState('');
+            const [completedLevels, setCompletedLevels] = useState([]);
+            const [dramaStep, setDramaStep] = useState(0);
+            const [viewingTheme, setViewingTheme] = useState(null);
+            const [deferredPrompt, setDeferredPrompt] = useState(null);
+            const recognitionRef = useRef(null);
 
-    <!-- 進化畫面 -->
-    <div id="evo-overlay">
-        <div id="evo-flash-container"></div>
-        <h1 style="font-size: 3rem;">進步中...</h1>
-        <p>你嘅詞彙量正在進化！</p>
-    </div>
+            const currentTheme = THEME_LEVELS[currentThemeIndex];
+            const currentVocab = currentTheme?.words[currentWordIndex];
+            const getImageUrl = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
 
-    <script>
-        let count = 0;
-        let level = 1;
+            useEffect(() => {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'yue-Hant-HK';
+                    recognition.onstart = () => setIsListening(true);
+                    recognition.onresult = (e) => {
+                        const transcript = e.results[0][0].transcript;
+                        if (transcript.includes(currentVocab.word)) {
+                            setGameState('success');
+                            setFeedback(`好叻呀！讀對了「${currentVocab.word}」！`);
+                        } else {
+                            setFeedback(`差少少！你讀咗「${transcript}」`);
+                        }
+                    };
+                    recognition.onend = () => setIsListening(false);
+                    recognitionRef.current = recognition;
+                }
+                
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    setDeferredPrompt(e);
+                });
+            }, [currentWordIndex]);
 
-        function handleAnswer() {
-            count++;
-            const progress = (count / 5) * 100;
-            document.getElementById('progress-bar').style.width = progress + '%';
+            const playAudio = (text) => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-HK';
+                window.speechSynthesis.speak(utterance);
+            };
 
-            if (count >= 5) {
-                startEvolution();
-            }
+            const nextLevel = () => {
+                if (currentWordIndex + 1 < currentTheme.words.length) {
+                    setCurrentWordIndex(currentWordIndex + 1);
+                    setGameState('playing');
+                    setFeedback('');
+                } else {
+                    if (!completedLevels.includes(currentTheme.id)) {
+                        setCompletedLevels([...completedLevels, currentTheme.id]);
+                        setDramaStep(0);
+                        setGameState('drama');
+                    } else {
+                        setGameState('level_complete');
+                    }
+                }
+            };
+
+            return (
+                <div className="h-screen w-screen flex flex-col items-center justify-center p-4">
+                    {/* 開始畫面 */}
+                    {gameState === 'start' && (
+                        <div className="text-center animate-fade-in">
+                            <img src={getImageUrl(25)} className="w-48 h-48 mx-auto mb-8 animate-bounce" />
+                            <h1 className="text-5xl md:text-7xl font-black text-blue-600 mb-8">小精靈認字特訓</h1>
+                            <button onClick={() => setGameState('level_select')} className="bg-red-500 text-white text-3xl font-bold py-6 px-12 rounded-full shadow-xl">進入遊戲</button>
+                            {deferredPrompt && (
+                                <button onClick={() => deferredPrompt.prompt()} className="block mx-auto mt-6 text-blue-500 font-bold underline">安裝到桌面</button>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 地圖 */}
+                    {gameState === 'level_select' && (
+                        <div className="w-full max-w-6xl h-full overflow-y-auto py-10 animate-fade-in text-center">
+                            <div className="flex justify-between items-center mb-8 px-6">
+                                <h2 className="text-4xl font-bold">🗺️ 學習地圖</h2>
+                                <button onClick={() => setGameState('pokedex')} className="bg-yellow-400 p-3 rounded-full font-bold">📖 我的圖鑑 ({completedLevels.length}/15)</button>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 px-6">
+                                {THEME_LEVELS.map((t, i) => (
+                                    <div key={t.id} onClick={() => {setCurrentThemeIndex(i); setGameState('summary');}} className={`p-4 rounded-3xl shadow-lg cursor-pointer border-4 ${completedLevels.includes(t.id) ? 'bg-green-100 border-green-400' : 'bg-white border-transparent'}`}>
+                                        <img src={getImageUrl(t.iconPokeId)} className="w-20 h-20 mx-auto" />
+                                        <div className="text-xl font-bold">{t.theme}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 關卡 Summary */}
+                    {gameState === 'summary' && (
+                        <div className="text-center animate-fade-in w-full max-w-4xl">
+                            <h2 className="text-4xl font-bold mb-8">「{currentTheme.theme}」學習目標</h2>
+                            <div className="flex flex-wrap justify-center gap-4 mb-8">
+                                {currentTheme.words.map(w => <div key={w.word} className="bg-white p-6 rounded-2xl shadow text-3xl">{w.emoji} {w.word}</div>)}
+                            </div>
+                            <button onClick={() => {setCurrentWordIndex(0); setGameState('tutorial');}} className="bg-green-500 text-white text-3xl font-bold py-5 px-10 rounded-full">開始學習</button>
+                        </div>
+                    )}
+
+                    {/* 教學 */}
+                    {gameState === 'tutorial' && (
+                        <div className="bg-white p-12 rounded-3xl shadow-2xl text-center border-8 border-yellow-400 animate-fade-in max-w-2xl w-full">
+                            <div className="text-[12rem] mb-4">{currentVocab.emoji}</div>
+                            <h2 className="text-8xl font-black mb-8">{currentVocab.word}</h2>
+                            <div className="flex gap-6 justify-center">
+                                <button onClick={() => playAudio(currentVocab.word)} className="bg-blue-500 text-white p-6 rounded-full text-2xl font-bold">🔊 聽發音</button>
+                                <button onClick={() => { if(currentWordIndex+1 < currentTheme.words.length) { setCurrentWordIndex(currentWordIndex+1) } else { setGameState('transition') } }} className="bg-green-500 text-white p-6 rounded-full px-12 text-2xl font-bold">下一個 ➔</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 轉場 */}
+                    {gameState === 'transition' && (
+                        <div className="text-center animate-fade-in">
+                            <img src={getImageUrl(150)} className="w-56 h-56 mx-auto mb-8 animate-pulse" />
+                            <h2 className="text-5xl font-bold mb-12">準備好接受挑戰未？</h2>
+                            <button onClick={() => {setCurrentWordIndex(0); setGameState('playing');}} className="bg-red-500 text-white text-4xl font-bold py-8 px-16 rounded-full shadow-2xl">開始考核</button>
+                        </div>
+                    )}
+
+                    {/* 考核 */}
+                    {gameState === 'playing' && (
+                        <div className="bg-white p-12 rounded-3xl shadow-2xl text-center animate-fade-in max-w-2xl w-full border-8 border-blue-400">
+                            <div className="text-[12rem] mb-4">{currentVocab.emoji}</div>
+                            <h2 className="text-8xl font-black mb-8">{currentVocab.word}</h2>
+                            <button onClick={() => recognitionRef.current.start()} className={`p-10 rounded-full shadow-xl transition ${isListening ? 'bg-red-500 scale-110' : 'bg-green-500 hover:scale-105'}`}>
+                                <span className="text-white text-3xl font-bold">{isListening ? '正在聽...' : '🎤 撳掣讀字'}</span>
+                            </button>
+                            <p className="mt-8 text-2xl text-blue-600 font-bold h-10">{feedback}</p>
+                            <button onClick={() => setGameState('success')} className="opacity-0 w-full h-10">Skip</button>
+                        </div>
+                    )}
+
+                    {/* 單字成功 */}
+                    {gameState === 'success' && (
+                        <div className="text-center animate-fade-in">
+                            <h2 className="text-6xl font-black text-green-600 mb-8">好叻呀！讀啱咗！</h2>
+                            <div className="text-[10rem] mb-8">{currentVocab.emoji}</div>
+                            <button onClick={nextLevel} className="bg-yellow-400 text-black text-3xl font-bold py-5 px-12 rounded-full">繼續 ➔</button>
+                        </div>
+                    )}
+
+                    {/* 劇情 */}
+                    {gameState === 'drama' && (
+                        <div className="bg-black/90 absolute inset-0 flex flex-col items-center justify-center p-8 text-white z-50">
+                            <img src={getImageUrl(currentTheme.reward.pokeId)} className="w-80 h-80 mb-12 animate-bounce" />
+                            <div onClick={() => dramaStep+1 < currentTheme.reward.drama.length ? setDramaStep(dramaStep+1) : setGameState('level_complete')} className="bg-white text-black p-10 rounded-3xl text-4xl font-bold cursor-pointer max-w-3xl border-8 border-blue-500">
+                                {currentTheme.reward.drama[dramaStep]}
+                                <p className="text-xl text-blue-500 mt-6 text-right">點擊繼續...</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 關卡完結 */}
+                    {gameState === 'level_complete' && (
+                        <div className="text-center animate-fade-in">
+                            <h2 className="text-6xl font-black text-yellow-500 mb-8 drop-shadow-lg">收服成功！</h2>
+                            <img src={getImageUrl(currentTheme.reward.pokeId)} className="w-80 h-80 mx-auto mb-8 animate-pulse" />
+                            <h3 className="text-4xl font-bold mb-12">獲得了 【{currentTheme.reward.name}】！</h3>
+                            <button onClick={() => setGameState('level_select')} className="bg-blue-500 text-white text-3xl font-bold py-6 px-16 rounded-full shadow-xl">返回地圖</button>
+                        </div>
+                    )}
+
+                    {/* 圖鑑 */}
+                    {gameState === 'pokedex' && (
+                        <div className="w-full h-full pokedex-bg text-white overflow-y-auto p-10 animate-fade-in">
+                            <div className="flex justify-between items-center mb-10">
+                                <h2 className="text-5xl font-black">🔴 我的圖鑑</h2>
+                                <button onClick={() => setGameState('level_select')} className="bg-white text-black px-8 py-3 rounded-full font-bold">返回地圖</button>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+                                {THEME_LEVELS.map(t => {
+                                    const caught = completedLevels.includes(t.id);
+                                    return (
+                                        <div key={t.id} className={`p-6 rounded-2xl text-center border-4 ${caught ? 'bg-blue-800 border-blue-400' : 'bg-gray-800 border-gray-700'}`}>
+                                            <img src={getImageUrl(t.reward.pokeId)} className={`w-32 h-32 mx-auto mb-4 ${caught ? '' : 'brightness-0 opacity-30'}`} />
+                                            <div className="text-xl font-bold">{caught ? t.reward.name : '???'}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
         }
 
-        function startEvolution() {
-            const overlay = document.getElementById('evo-overlay');
-            const card = document.getElementById('vocab-card');
-            
-            overlay.style.display = 'flex';
-            card.classList.add('evolving');
-
-            setTimeout(() => {
-                // 觸發閃光
-                const flash = document.createElement('div');
-                flash.className = 'flash';
-                document.getElementById('evo-flash-container').appendChild(flash);
-
-                setTimeout(() => {
-                    level++;
-                    count = 0;
-                    document.getElementById('current-level').innerText = level;
-                    document.getElementById('progress-bar').style.width = '0%';
-                    
-                    overlay.style.display = 'none';
-                    card.classList.remove('evolving');
-                    flash.remove();
-                }, 500);
-            }, 2000);
-        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
