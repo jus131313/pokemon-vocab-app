@@ -55,36 +55,27 @@
         .level-num { font-size: 1.2rem; font-weight: bold; background: var(--poke-dark); color: white; width: 100%; text-align: center; padding: 5px 0; }
         .poke-thumb { width: 90px; height: 90px; object-fit: contain; margin-bottom: 10px; transition: filter 0.3s; }
 
-        /* --- 學習與考核版面 (遊戲數據面板風格) --- */
+        /* --- 學習與考核版面 --- */
         .game-layout { display: flex; width: 90%; max-width: 1000px; height: 80%; gap: 20px; }
-        
-        /* 左側 (數據面板) */
         .left-panel { flex: 1; background: white; border: 5px solid var(--poke-dark); border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.05); }
         
         .type-badge { color: white; padding: 5px 20px; border-radius: 20px; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; border: 2px solid rgba(0,0,0,0.2); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        
-        /* 真實相片展示區 */
-        .word-image { width: 200px; height: 150px; object-fit: cover; border-radius: 10px; border: 3px solid #ccc; margin-bottom: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .word-image { width: 220px; height: 160px; object-fit: cover; border-radius: 10px; border: 3px solid #ccc; margin-bottom: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #eee;}
         .word-display { font-size: 3.5rem; font-weight: bold; color: var(--poke-dark); margin-bottom: 10px; text-shadow: 2px 2px 0px #eee; }
         
-        /* 經驗值/熟練度條 */
         .stat-container { width: 80%; text-align: left; font-weight: bold; color: #555; margin-bottom: 20px; }
         .stat-bar-bg { width: 100%; height: 12px; background: #ddd; border-radius: 10px; margin-top: 5px; overflow: hidden; border: 2px solid #aaa; }
         .stat-bar-fill { height: 100%; background: var(--poke-exp); width: 0%; transition: width 0.5s ease-out; }
         
-        /* 操作按鈕 */
         .btn-learn { color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 1.2rem; cursor: pointer; margin-bottom: 10px; transition: 0.2s; font-weight: bold; display: flex; align-items: center; gap: 8px;}
         .btn-learn:hover { transform: scale(1.05); filter: brightness(1.1); }
-
         .btn-mic { background: var(--poke-red); color: white; width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--poke-dark); font-size: 2.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; box-shadow: 0 5px 10px rgba(227, 53, 13, 0.4); }
         .btn-mic:active { transform: scale(0.9); }
         .btn-mic.listening { animation: pulse-red 1s infinite; background: #ff5959; }
 
-        /* 右側 (圖鑑與火箭兵團) */
         .right-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; }
         .mystery-box { background: var(--poke-dark); flex: 1; border-radius: 15px; border: 5px solid #555; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
         .mystery-bg { position: absolute; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #1a1a1a, #1a1a1a 10px, #222 10px, #222 20px); z-index: 1; }
-        
         .target-pokemon { width: 220px; height: 220px; object-fit: contain; z-index: 2; filter: brightness(0); transition: filter 2s ease-in-out, transform 1s; }
         .target-pokemon.revealed { filter: brightness(1); transform: scale(1.2) drop-shadow(0 0 20px gold); }
 
@@ -94,18 +85,40 @@
 
         .shake { animation: shake 0.4s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-15px); } 75% { transform: translateX(15px); } }
-        
         .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; transition: opacity 0.5s; z-index: 990; }
         .flash-active { opacity: 1; }
 
-        /* --- 自訂解鎖成功畫面 (結合影片) --- */
+        /* --- 自訂解鎖成功畫面 (結合純代碼精靈球動畫) --- */
         .success-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; }
-        .success-modal.active { display: flex; animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .success-modal.active { display: flex; }
         .modal-content { background: var(--poke-dark); border: 5px solid gold; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 400px; max-width: 90%; }
         
-        .video-container { width: 100%; border-radius: 10px; overflow: hidden; margin: 15px 0; border: 3px solid #444; background: black; }
+        /* 內建掟精靈球動畫區 */
+        .capture-scene { width: 100%; height: 200px; position: relative; overflow: hidden; background: linear-gradient(to bottom, #87CEEB 60%, #5a9e38 40%); border-radius: 10px; margin: 15px 0; border: 3px solid #444; }
+        .anim-pokemon { width: 90px; height: 90px; position: absolute; top: 30px; left: 50%; transform: translateX(-50%); transition: all 0.4s; object-fit: contain; }
+        .anim-pokeball { width: 35px; height: 35px; position: absolute; bottom: -40px; left: 50%; margin-left: -17.5px; background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png') no-repeat center/contain; }
         
-        .modal-img { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 0 15px gold); margin-top: -20px; position: relative; z-index: 2; }
+        /* 動畫 Classes */
+        .throw { animation: throwAnim 0.7s forwards ease-out; }
+        @keyframes throwAnim {
+            0% { bottom: -40px; transform: scale(1) rotate(0deg); }
+            50% { bottom: 120px; transform: scale(1.5) rotate(360deg); }
+            100% { bottom: 60px; transform: scale(1) rotate(720deg); }
+        }
+        .suck { animation: suckAnim 0.4s forwards; }
+        @keyframes suckAnim { 100% { transform: translateX(-50%) scale(0); opacity: 0; filter: brightness(2) drop-shadow(0 0 20px red); } }
+        .shake-catch { animation: shakeCatch 2.5s forwards; }
+        @keyframes shakeCatch {
+            0% { bottom: 60px; }
+            10% { bottom: 20px; transform: rotate(0deg); }
+            30% { transform: translateX(-15px) rotate(-20deg); }
+            50% { transform: translateX(15px) rotate(20deg); }
+            70% { transform: translateX(-15px) rotate(-20deg); }
+            90% { transform: translateX(0) rotate(0deg); }
+            100% { bottom: 20px; filter: drop-shadow(0 0 15px gold); transform: scale(1.2); }
+        }
+
+        .modal-img { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 0 15px gold); margin-top: -10px; position: relative; z-index: 2; animation: pop-in 0.5s; }
         .modal-btn { background: var(--poke-red); color: white; padding: 10px 30px; font-size: 1.2rem; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; margin-top: 15px; transition: 0.2s; }
         .modal-btn:hover { background: #ff5959; transform: scale(1.1); }
         @keyframes pop-in { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -115,9 +128,7 @@
 <body>
 
     <div class="header">
-        <div class="led-container">
-            <div class="led red"></div><div class="led yellow"></div><div class="led green"></div>
-        </div>
+        <div class="led-container"><div class="led red"></div><div class="led yellow"></div><div class="led green"></div></div>
         <div class="header-title">寵物小精靈認字大冒險</div>
         <button onclick="navTo('home-screen')" style="background:transparent; border:1px solid white; color:white; padding:5px 10px; cursor:pointer; border-radius:5px; font-weight:bold;">返回首頁</button>
     </div>
@@ -131,21 +142,15 @@
     <!-- 2. 關卡選擇頁 -->
     <div id="level-screen" class="screen">
         <h2 style="font-size: 2rem;">選擇學習區域</h2>
-        <div class="level-grid" id="level-grid">
-            <!-- JS 生成 -->
-        </div>
+        <div class="level-grid" id="level-grid"></div>
     </div>
 
     <!-- 3. 學習與考核頁 -->
     <div id="game-screen" class="screen">
         <div class="game-layout">
-            <!-- 左側 (數據面板) -->
             <div class="left-panel" id="card-panel">
                 <div class="type-badge" id="word-type">屬性：未知</div>
-                
-                <!-- 改用真實相片 -->
-                <img src="" alt="Vocabulary Image" class="word-image" id="card-image">
-                
+                <img src="" alt="Vocabulary Image" class="word-image" id="card-image" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg'">
                 <div class="word-display" id="card-name">準備</div>
                 
                 <div class="stat-container">
@@ -153,23 +158,19 @@
                     <div class="stat-bar-bg"><div class="stat-bar-fill" id="prog-bar"></div></div>
                 </div>
                 
-                <!-- 練習模式按鈕 -->
                 <button class="btn-learn" onclick="playVoice()" style="background: var(--poke-blue);">🔊 聽取發音</button>
                 <button class="btn-learn" id="btn-next" onclick="nextPracticeWord()" style="background: var(--poke-green);">⏭️ 睇下一個字</button>
                 <button class="btn-learn" id="btn-start-test" onclick="startAssessment()" style="background: var(--poke-red); display: none;">⚔️ 開始聲控考核！</button>
                 
-                <!-- 考核模式按鈕 (預設隱藏) -->
                 <button class="btn-mic" id="mic-btn" onclick="startListening()" style="display: none;">🎤</button>
                 <div style="margin-top:15px; font-weight:bold; color:#666; display: none;" id="mic-status">考核中：大聲讀出嚟！</div>
             </div>
 
-            <!-- 右側 (圖鑑與火箭兵團) -->
             <div class="right-panel">
                 <div class="mystery-box">
                     <div class="mystery-bg"></div>
                     <img src="" alt="Target Pokemon" class="target-pokemon" id="mystery-poke">
                 </div>
-                
                 <div class="rocket-panel">
                     <div class="rocket-img"></div>
                     <div class="rocket-dialogue" id="rocket-text">既然你誠心誠意咁發問... 就開始練習先啦！</div>
@@ -180,26 +181,27 @@
 
     <div class="flash-overlay" id="flash-bg"></div>
 
-    <!-- 4. 自訂解鎖成功畫面 (結合捕捉動畫) -->
+    <!-- 4. 自訂解鎖畫面 (內建純代碼掟精靈球動畫) -->
     <div class="success-modal" id="success-modal">
         <div class="modal-content">
-            <h2 style="color: gold; margin-top: 0; font-size: 2.2rem;">收服成功！</h2>
+            <h2 style="color: gold; margin-top: 0; font-size: 2.2rem;" id="modal-title">精靈球，去吧！</h2>
             
-            <div class="video-container">
-                <!-- 記得放你自己嘅 capture.mp4 -->
-                <video id="capture-video" width="100%" height="200" muted playsinline>
-                    <source src="capture.mp4" type="video/mp4">
-                </video>
+            <!-- 動畫場景 -->
+            <div class="capture-scene" id="capture-scene">
+                <img src="" class="anim-pokemon" id="anim-pokemon">
+                <div class="anim-pokeball" id="anim-pokeball"></div>
             </div>
             
-            <img src="" alt="Unlocked" class="modal-img" id="modal-reward-img">
-            <h3 style="font-size: 1.5rem; margin: 10px 0;">你收服咗【<span id="modal-reward-name" style="color: var(--poke-blue);"></span>】！</h3>
-            <button class="modal-btn" onclick="closeSuccessModal()">返回圖鑑</button>
+            <!-- 成功結果 -->
+            <div id="success-result" style="display:none;">
+                <img src="" alt="Unlocked" class="modal-img" id="modal-reward-img">
+                <h3 style="font-size: 1.5rem; margin: 10px 0;">你收服咗【<span id="modal-reward-name" style="color: var(--poke-blue);"></span>】！</h3>
+                <button class="modal-btn" onclick="closeSuccessModal()">返回圖鑑</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- 廣東話語音辨識 ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
         if (SpeechRecognition) {
@@ -211,7 +213,6 @@
             alert("你嘅瀏覽器唔支援語音辨識，請用 Google Chrome！");
         }
 
-        // --- 屬性顏色對照表 (經典 18 屬性) ---
         const typeColors = {
             '火': '#F08030', '水': '#6890F0', '草': '#78C850', '電': '#F8D030',
             '冰': '#98D8D8', '格鬥': '#C03028', '毒': '#A040A0', '地面': '#E0C068',
@@ -220,31 +221,30 @@
             '妖精': '#EE99AC', '一般': '#A8A878'
         };
 
-        // --- 數據庫 (加入真實相片連結) ---
-        // 圖片採用 Unsplash URL 作為示範
+        // 已將圖片替換為極穩定嘅 Wikimedia 連結
         const vocabDB = {
             1: { 
                 areaName: '食物區', rewardName: '小火龍', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png', pokeType: '火',
                 words: [
-                    { word: '蘋果', img: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6fac6?w=400&q=80' }, 
-                    { word: '香蕉', img: 'https://images.unsplash.com/photo-1528825871115-3581a5387919?w=400&q=80' },
-                    { word: '士多啤梨', img: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=400&q=80' }
+                    { word: '蘋果', img: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg' }, 
+                    { word: '香蕉', img: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg' },
+                    { word: '士多啤梨', img: 'https://upload.wikimedia.org/wikipedia/commons/2/29/PerfectStrawberry.jpg' }
                 ]
             },
             2: { 
-                areaName: '交通工具區', rewardName: '車厘龜', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png', pokeType: '水',
+                areaName: '交通區', rewardName: '車厘龜', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png', pokeType: '水',
                 words: [
-                    { word: '巴士', img: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&q=80' }, 
-                    { word: '飛機', img: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=400&q=80' },
-                    { word: '火車', img: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=400&q=80' }
+                    { word: '巴士', img: 'https://upload.wikimedia.org/wikipedia/commons/6/63/LT_471_%28LTZ_1471%29_Arriva_London_New_Routemaster_%2819522859218%29.jpg' }, 
+                    { word: '飛機', img: 'https://upload.wikimedia.org/wikipedia/commons/c/c9/Cathay_Pacific_Boeing_777-300_B-HNE.jpg' },
+                    { word: '火車', img: 'https://upload.wikimedia.org/wikipedia/commons/3/30/MTR_Rotem_EMU.jpg' }
                 ]
             },
             3: { 
-                areaName: '自然景觀區', rewardName: '奇異種子', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png', pokeType: '草',
+                areaName: '自然區', rewardName: '奇異種子', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png', pokeType: '草',
                 words: [
-                    { word: '太陽', img: 'https://images.unsplash.com/photo-1533324268742-60b27140b4f2?w=400&q=80' }, 
-                    { word: '月亮', img: 'https://images.unsplash.com/photo-1532698416629-d5964d50937a?w=400&q=80' },
-                    { word: '星星', img: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&q=80' }
+                    { word: '太陽', img: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg' }, 
+                    { word: '月亮', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/FullMoon2010.jpg' },
+                    { word: '星星', img: 'https://upload.wikimedia.org/wikipedia/commons/6/62/Starsinthesky.jpg' }
                 ]
             }
         };
@@ -279,23 +279,20 @@
             }
         }
 
-        // --- 進入關卡 (預設為練習模式) ---
         function startLevel(level) {
             currentLevel = level;
             currentLevelData = vocabDB[level];
             questionIndex = 0;
             isPracticeMode = true;
             
-            // 設置 UI 為練習模式
             document.getElementById('mic-btn').style.display = 'none';
             document.getElementById('mic-status').style.display = 'none';
             document.getElementById('btn-next').style.display = 'inline-flex';
             document.getElementById('btn-start-test').style.display = 'none';
 
-            // 更新精靈屬性徽章
             const typeBadge = document.getElementById('word-type');
             const typeColor = typeColors[currentLevelData.pokeType] || '#888';
-            typeBadge.innerText = `精靈屬性：${currentLevelData.pokeType}`;
+            typeBadge.innerText = `屬性：${currentLevelData.pokeType}`;
             typeBadge.style.backgroundColor = typeColor;
 
             document.getElementById('mystery-poke').src = currentLevelData.rewardImg;
@@ -308,7 +305,7 @@
         function loadQuestion() {
             const data = currentLevelData.words[questionIndex];
             document.getElementById('card-name').innerText = data.word;
-            document.getElementById('card-image').src = data.img; // 載入真實高清圖片
+            document.getElementById('card-image').src = data.img;
             
             if (isPracticeMode) {
                 document.getElementById('mastery-level').innerText = `練習進度 ${questionIndex + 1}/${currentLevelData.words.length}`;
@@ -319,31 +316,26 @@
             }
         }
 
-        // --- 練習模式：下一個字 ---
         function nextPracticeWord() {
             questionIndex++;
             if (questionIndex >= currentLevelData.words.length) {
                 document.getElementById('rocket-text').innerText = "全部學晒喇！準備好接受正式考核未？";
                 document.getElementById('btn-next').style.display = 'none';
                 document.getElementById('btn-start-test').style.display = 'inline-flex';
-                // 顯示進度滿
                 document.getElementById('prog-bar').style.width = '100%';
             } else {
                 loadQuestion();
             }
         }
 
-        // --- 切換至考核模式 ---
         function startAssessment() {
             isPracticeMode = false;
-            questionIndex = 0; // 進度重置
-
+            questionIndex = 0;
             document.getElementById('btn-start-test').style.display = 'none';
             document.getElementById('btn-next').style.display = 'none';
             document.getElementById('mic-btn').style.display = 'flex';
             document.getElementById('mic-status').style.display = 'block';
             document.getElementById('rocket-text').innerText = "考核開始！撳咪高峰，大聲讀出嚟！";
-
             loadQuestion();
         }
 
@@ -362,7 +354,6 @@
             btn.classList.add('listening');
             status.innerText = "聽緊喇... 請讀！";
             status.style.color = "var(--poke-red)";
-
             recognition.start();
 
             recognition.onresult = (event) => {
@@ -377,7 +368,7 @@
                 status.style.color = "#666";
             };
 
-            recognition.onerror = (event) => {
+            recognition.onerror = () => {
                 btn.classList.remove('listening');
                 status.innerText = "收唔到音呀，再講多次？";
             };
@@ -395,44 +386,61 @@
                 }
             } else {
                 document.getElementById('card-panel').classList.add('shake');
-                document.getElementById('rocket-text').innerText = `你講「${spokenWord}」？效果似乎唔顯著喎，再試下！`;
+                document.getElementById('rocket-text').innerText = `你講「${spokenWord}」？效果唔顯著喎！`;
                 setTimeout(() => document.getElementById('card-panel').classList.remove('shake'), 400);
             }
         }
 
         function revealPokemon() {
-            document.getElementById('rocket-text').innerText = "精靈球，去吧！";
+            document.getElementById('rocket-text').innerText = "上啦，精靈球！";
             document.getElementById('flash-bg').classList.add('flash-active');
-            
             document.getElementById('mastery-level').innerText = `考核完成！`;
             document.getElementById('prog-bar').style.width = '100%';
 
             setTimeout(() => {
                 document.getElementById('flash-bg').classList.remove('flash-active');
                 document.getElementById('mystery-poke').classList.add('revealed');
-                
-                setTimeout(() => {
-                    showSuccessModal(currentLevelData.rewardName, currentLevelData.rewardImg);
-                }, 1500);
+                setTimeout(() => { showCaptureAnimation(currentLevelData); }, 1500);
             }, 800);
         }
 
-        function showSuccessModal(name, imgUrl) {
-            document.getElementById('modal-reward-name').innerText = name;
-            document.getElementById('modal-reward-img').src = imgUrl;
+        // --- 純代碼精靈球捕捉動畫流程 ---
+        function showCaptureAnimation(data) {
+            const poke = document.getElementById('anim-pokemon');
+            const ball = document.getElementById('anim-pokeball');
+            
+            // 重置狀態
+            poke.src = data.rewardImg;
+            poke.className = 'anim-pokemon';
+            ball.className = 'anim-pokeball';
+            
+            document.getElementById('modal-title').innerText = "精靈球，去吧！";
+            document.getElementById('capture-scene').style.display = 'block';
+            document.getElementById('success-result').style.display = 'none';
             document.getElementById('success-modal').classList.add('active');
             
-            const video = document.getElementById('capture-video');
-            video.currentTime = 0;
-            video.play().catch(e => console.log("影片無法自動播放:", e));
+            // 1. 掟出精靈球
+            ball.classList.add('throw');
             
-            if(currentLevel >= unlockedLevels && currentLevel < 10) unlockedLevels++;
+            // 2. 命中並吸入小精靈
+            setTimeout(() => { poke.classList.add('suck'); }, 700);
+            
+            // 3. 落地搖晃三下
+            setTimeout(() => { ball.classList.add('shake-catch'); }, 1100);
+            
+            // 4. 收服成功，顯示結果
+            setTimeout(() => {
+                document.getElementById('capture-scene').style.display = 'none';
+                document.getElementById('success-result').style.display = 'block';
+                document.getElementById('modal-title').innerText = "收服成功！";
+                document.getElementById('modal-reward-name').innerText = data.rewardName;
+                document.getElementById('modal-reward-img').src = data.rewardImg;
+                
+                if(currentLevel >= unlockedLevels && currentLevel < 10) unlockedLevels++;
+            }, 3600);
         }
 
         function closeSuccessModal() {
-            const video = document.getElementById('capture-video');
-            video.pause();
-            
             document.getElementById('success-modal').classList.remove('active');
             navTo('level-screen');
         }
