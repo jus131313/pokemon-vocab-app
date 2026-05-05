@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-    <!-- 強制適配手機螢幕，防止雙擊放大 -->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>寵物小精靈認字大冒險</title>
     <style>
         /* --- 官方 Pokedex 風格配色 --- */
@@ -12,173 +11,166 @@
             --poke-dark: #1A1A1A;
             --poke-grey: #F2F2F2;
             --poke-blue: #30A7D7;
-            --poke-green: #78C850;
-            --poke-exp: #F8D030;
             --tech-font: 'Arial', '微軟正黑體', sans-serif;
         }
 
-        /* 修正 1：解除 body 高度鎖定，容許手機版滑動 */
         body {
             margin: 0; background: url('https://www.transparenttextures.com/patterns/cubes.png') var(--poke-grey);
             font-family: var(--tech-font); color: var(--poke-dark);
-            min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
+        /* --- 頂部導航列 --- */
         .header {
-            background: var(--poke-red); color: white; padding: 10px 15px;
+            background: var(--poke-red); color: white; padding: 15px 20px;
             display: flex; align-items: center; justify-content: space-between;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3); border-bottom: 5px solid var(--poke-dark);
-            position: sticky; top: 0; z-index: 100;
+            position: relative; z-index: 10;
         }
-        .header-title { font-size: 1.2rem; font-weight: bold; font-style: italic; letter-spacing: 1px; }
+        .header-title { font-size: 1.5rem; font-weight: bold; font-style: italic; letter-spacing: 2px; }
         
-        .led-container { display: flex; gap: 8px; }
-        .led { width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; }
+        .led-container { display: flex; gap: 10px; }
+        .led { width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; }
         .led.red { background: #ff5959; box-shadow: 0 0 10px #ff5959; animation: blink 2s infinite; }
-        .led.yellow { background: var(--poke-exp); }
-        .led.green { background: var(--poke-green); }
+        .led.yellow { background: #fbd743; }
+        .led.green { background: #4caf50; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-        /* 修正 2：容許 screen 向下擴展 */
-        .screen { display: none; width: 100%; min-height: calc(100vh - 60px); flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px 0; position: relative; box-sizing: border-box; }
+        /* --- 頁面切換 --- */
+        .screen { display: none; width: 100%; height: calc(100vh - 60px); flex-direction: column; align-items: center; justify-content: center; position: relative; }
         .screen.active { display: flex; }
-        
-        /* 置中主頁內容 */
-        #home-screen { justify-content: center; }
 
-        .btn-main { background: var(--poke-dark); color: white; font-size: 1.2rem; padding: 15px 40px; border-radius: 8px; border: 2px solid var(--poke-dark); cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 2px; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%); }
+        /* --- 主頁 & 關卡頁 --- */
+        .btn-main { background: var(--poke-dark); color: white; font-size: 1.5rem; padding: 15px 50px; border-radius: 8px; border: 2px solid var(--poke-dark); cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 2px; }
         .btn-main:hover { background: var(--poke-red); transform: scale(1.05); }
 
-        .level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; width: 90%; max-width: 800px; margin-top: 20px; }
-        .level-card { background: white; border: 3px solid var(--poke-dark); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s; box-shadow: 4px 4px 0px rgba(0,0,0,0.1); overflow: hidden; padding-bottom: 10px; }
-        .level-card:hover { transform: translateY(-3px); box-shadow: 4px 8px 0px rgba(0,0,0,0.2); border-color: var(--poke-blue); }
+        .level-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 800px; margin-top: 20px; }
+        .level-card { background: white; border: 3px solid var(--poke-dark); border-radius: 10px; width: 120px; height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.2s; box-shadow: 5px 5px 0px rgba(0,0,0,0.1); overflow: hidden; }
+        .level-card:hover { transform: translateY(-5px); box-shadow: 5px 10px 0px rgba(0,0,0,0.2); border-color: var(--poke-blue); }
         .level-card.locked { opacity: 0.6; pointer-events: none; }
         .level-card.locked .poke-thumb { filter: brightness(0); opacity: 0.5; }
-        .level-num { font-size: 1rem; font-weight: bold; background: var(--poke-dark); color: white; width: 100%; text-align: center; padding: 5px 0; margin-bottom: 10px; }
-        .poke-thumb { width: 70px; height: 70px; object-fit: contain; }
+        
+        .level-num { font-size: 1.2rem; font-weight: bold; background: var(--poke-dark); color: white; width: 100%; text-align: center; padding: 5px 0; }
+        .poke-thumb { width: 90px; height: 90px; object-fit: contain; margin-bottom: 10px; transition: filter 0.3s; }
 
-        /* --- 響應式學習與考核版面 --- */
-        .game-layout { display: flex; flex-direction: row; width: 90%; max-width: 1000px; gap: 20px; }
-        .left-panel { flex: 1.5; background: white; border: 5px solid var(--poke-dark); border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.05); }
+        /* --- 學習與考核版面 --- */
+        .game-layout { display: flex; width: 90%; max-width: 1000px; height: 80%; gap: 20px; }
         
-        .type-badge { color: white; padding: 5px 15px; border-radius: 20px; font-size: 1rem; font-weight: bold; margin-bottom: 10px; border: 2px solid rgba(0,0,0,0.2); }
-        .word-image { width: 100%; max-width: 300px; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; border: 3px solid #ccc; margin-bottom: 10px; background: #eee;}
-        .word-display { font-size: 2.5rem; font-weight: bold; color: var(--poke-dark); margin-bottom: 10px; text-shadow: 2px 2px 0px #eee; }
+        .left-panel { flex: 1; background: white; border: 5px solid var(--poke-dark); border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.05); }
+        .word-display { font-size: 4rem; font-weight: bold; color: var(--poke-dark); margin-bottom: 10px; text-shadow: 2px 2px 0px #eee; text-align: center; }
+        .word-emoji { font-size: 4rem; margin-bottom: 20px; }
         
-        .stat-container { width: 100%; font-weight: bold; color: #555; margin-bottom: 15px; font-size: 0.9rem; text-align: left; }
-        .stat-bar-bg { width: 100%; height: 10px; background: #ddd; border-radius: 10px; margin-top: 5px; overflow: hidden; border: 2px solid #aaa; }
-        .stat-bar-fill { height: 100%; background: var(--poke-exp); width: 0%; transition: width 0.5s ease-out; }
-        
-        .btn-learn { color: white; border: none; padding: 12px 20px; border-radius: 30px; font-size: 1.1rem; cursor: pointer; margin-bottom: 10px; transition: 0.2s; font-weight: bold; width: 100%; max-width: 250px; display: flex; align-items: center; justify-content: center; gap: 8px;}
-        .btn-learn:active { transform: scale(0.95); }
-        
-        .btn-mic { background: var(--poke-red); color: white; width: 70px; height: 70px; border-radius: 50%; border: 4px solid var(--poke-dark); font-size: 2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; box-shadow: 0 5px 10px rgba(227, 53, 13, 0.4); margin: 10px 0; }
+        .btn-learn { background: var(--poke-blue); color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 1.2rem; cursor: pointer; margin-bottom: 20px; transition: 0.2s; font-weight: bold;}
+        .btn-learn:hover { background: #2488b1; transform: scale(1.05); }
+
+        .btn-mic { background: var(--poke-red); color: white; width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--poke-dark); font-size: 2.5rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; box-shadow: 0 5px 10px rgba(227, 53, 13, 0.4); }
         .btn-mic:active { transform: scale(0.9); }
         .btn-mic.listening { animation: pulse-red 1s infinite; background: #ff5959; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(227, 53, 13, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(227, 53, 13, 0); } 100% { box-shadow: 0 0 0 0 rgba(227, 53, 13, 0); } }
 
-        .right-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .mystery-box { background: var(--poke-dark); border-radius: 15px; border: 4px solid #555; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; aspect-ratio: 1/1; min-height: 150px; }
+        .right-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+        .mystery-box { background: var(--poke-dark); flex: 1; border-radius: 15px; border: 5px solid #555; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
         .mystery-bg { position: absolute; width: 100%; height: 100%; background: repeating-linear-gradient(45deg, #1a1a1a, #1a1a1a 10px, #222 10px, #222 20px); z-index: 1; }
-        .target-pokemon { width: 70%; height: 70%; object-fit: contain; z-index: 2; filter: brightness(0); transition: filter 2s ease-in-out, transform 1s; }
-        .target-pokemon.revealed { filter: brightness(1); transform: scale(1.1) drop-shadow(0 0 15px gold); }
+        
+        .target-pokemon { width: 220px; height: 220px; object-fit: contain; z-index: 2; filter: brightness(0); transition: filter 2s ease-in-out, transform 1s; }
+        .target-pokemon.revealed { filter: brightness(1); transform: scale(1.2) drop-shadow(0 0 20px gold); }
 
-        .rocket-panel { background: white; border: 3px solid #6c5ce7; border-radius: 10px; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        .rocket-img { width: 50px; height: 50px; background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/52.png') center/cover; border-radius: 50%; border: 2px solid #6c5ce7; flex-shrink: 0; }
-        .rocket-dialogue { font-weight: bold; font-size: 0.95rem; color: #333; line-height: 1.4; }
+        .rocket-panel { background: white; border: 4px solid #6c5ce7; border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 15px; }
+        .rocket-img { width: 60px; height: 60px; background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/52.png') center/cover; border-radius: 50%; border: 3px solid #6c5ce7; flex-shrink: 0; }
+        .rocket-dialogue { flex: 1; font-weight: bold; font-size: 1.1rem; color: #333; }
 
-        /* --- 手機版專屬 CSS (Media Query) --- */
-        @media (max-width: 768px) {
-            h1 { font-size: 2.5rem !important; text-align: center; }
-            h2 { font-size: 1.5rem !important; }
-            
-            /* 首頁關卡卡片變為 2 行排列 */
-            .level-grid { grid-template-columns: repeat(2, 1fr); width: 95%; }
-            
-            /* 學習介面改為上下排列 */
-            .game-layout { flex-direction: column; width: 95%; }
-            .left-panel { padding: 15px; }
-            .word-display { font-size: 2rem; }
-            
-            /* 右側面板調整尺寸 */
-            .mystery-box { min-height: unset; max-height: 200px; }
-            .target-pokemon { width: 120px; height: 120px; }
-        }
+        .progress-bar { width: 100%; height: 10px; background: #eee; border-radius: 5px; margin-top: 15px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--poke-blue); width: 0%; transition: 0.3s; }
 
         .shake { animation: shake 0.4s; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-15px); } 75% { transform: translateX(15px); } }
+        
         .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; transition: opacity 0.5s; z-index: 990; }
         .flash-active { opacity: 1; }
 
-        /* 動畫模態框 */
-        .success-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; box-sizing: border-box; }
-        .success-modal.active { display: flex; }
-        .modal-content { background: var(--poke-dark); border: 5px solid gold; padding: 20px; border-radius: 20px; text-align: center; width: 100%; max-width: 350px; }
-        
-        .capture-scene { width: 100%; height: 180px; position: relative; overflow: hidden; background: linear-gradient(to bottom, #87CEEB 60%, #5a9e38 40%); border-radius: 10px; margin: 15px 0; border: 3px solid #444; }
-        .anim-pokemon { width: 80px; height: 80px; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); transition: all 0.4s; object-fit: contain; }
-        .anim-pokeball { width: 30px; height: 30px; position: absolute; bottom: -40px; left: 50%; margin-left: -15px; background: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png') no-repeat center/contain; }
-        
-        .throw { animation: throwAnim 0.7s forwards ease-out; }
-        @keyframes throwAnim { 0% { bottom: -40px; transform: scale(1) rotate(0deg); } 50% { bottom: 100px; transform: scale(1.5) rotate(360deg); } 100% { bottom: 50px; transform: scale(1) rotate(720deg); } }
-        .suck { animation: suckAnim 0.4s forwards; }
-        @keyframes suckAnim { 100% { transform: translateX(-50%) scale(0); opacity: 0; filter: brightness(2) drop-shadow(0 0 20px red); } }
-        .shake-catch { animation: shakeCatch 2.5s forwards; }
-        @keyframes shakeCatch { 0%, 100% { bottom: 50px; } 10%, 90% { bottom: 15px; } 30%, 70% { transform: translateX(-15px) rotate(-20deg); } 50% { transform: translateX(15px) rotate(20deg); } 100% { filter: drop-shadow(0 0 15px gold); transform: scale(1.2); } }
-
-        .modal-img { width: 100px; height: 100px; object-fit: contain; filter: drop-shadow(0 0 15px gold); margin-top: -10px; animation: pop-in 0.5s; }
-        .modal-btn { background: var(--poke-red); color: white; padding: 12px 30px; font-size: 1.1rem; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; box-sizing: border-box; }
+        /* --- 自訂解鎖成功畫面 --- */
+        .success-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; }
+        .success-modal.active { display: flex; animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-content { background: var(--poke-dark); border: 5px solid gold; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 80%; max-width: 400px; }
+        .modal-img { width: 150px; height: 150px; object-fit: contain; filter: drop-shadow(0 0 15px gold); margin: 20px 0; }
+        .modal-btn { background: var(--poke-red); color: white; padding: 10px 30px; font-size: 1.2rem; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; margin-top: 20px; transition: 0.2s; }
         @keyframes pop-in { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* =========================================
+           手機響應式設計 (Responsive Design)
+           ========================================= */
+        @media (max-width: 768px) {
+            .header { flex-wrap: wrap; justify-content: center; gap: 10px; padding: 10px; }
+            .header div { font-size: 1.2rem; width: 100%; text-align: center; }
+            .header button { width: 100%; }
+
+            /* 關卡網格改為 2 欄 */
+            .level-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
+            .level-card { width: auto; height: auto; padding-bottom: 10px; }
+
+            /* 戰鬥畫面轉為上下排版，允許滑動 */
+            .screen { height: auto; min-height: 100vh; overflow-y: auto; padding-bottom: 20px; justify-content: flex-start; }
+            .game-layout { flex-direction: column; width: 95%; height: auto; margin-top: 20px; }
+            
+            .left-panel { padding: 15px; }
+            .word-text { font-size: 3rem; margin: 10px 0; }
+            
+            .pokedex-view { height: 180px; }
+            .target-pokemon { width: 150px; height: 150px; }
+            .mystery-box { min-height: 200px; }
+        }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="led-container"><div class="led red"></div><div class="led yellow"></div><div class="led green"></div></div>
+        <div class="led-container">
+            <div class="led red"></div><div class="led yellow"></div><div class="led green"></div>
+        </div>
         <div class="header-title">寵物小精靈認字大冒險</div>
-        <button onclick="navTo('home-screen')" style="background:transparent; border:1px solid white; color:white; padding:5px 10px; cursor:pointer; border-radius:5px; font-weight:bold; font-size:0.9rem;">返回</button>
+        <button onclick="navTo('home-screen')" style="background:transparent; border:1px solid white; color:white; padding:8px 15px; cursor:pointer; border-radius:5px; font-weight:bold;">返回首頁</button>
     </div>
 
-    <!-- 首頁 -->
+    <!-- 1. 首頁 -->
     <div id="home-screen" class="screen active">
-        <h1 style="font-size: 3.5rem; color: var(--poke-red); text-shadow: 3px 3px white; margin-bottom: 30px; text-align: center; line-height: 1.2;">認字大冒險</h1>
+        <h1 style="font-size: 2.5rem; color: var(--poke-red); text-shadow: 2px 2px white; margin-bottom: 40px; text-align: center;">認字大冒險</h1>
         <button class="btn-main" onclick="navTo('level-screen')">開啟圖鑑</button>
     </div>
 
-    <!-- 關卡選擇頁 -->
+    <!-- 2. 關卡選擇頁 -->
     <div id="level-screen" class="screen">
-        <h2 style="font-size: 2rem;">選擇學習區域</h2>
-        <div class="level-grid" id="level-grid"></div>
+        <h2 style="font-size: 2rem; margin-top: 20px;">選擇學習區域</h2>
+        <div class="level-grid" id="level-grid">
+            <!-- JS 自動生成 -->
+        </div>
     </div>
 
-    <!-- 學習與考核頁 -->
+    <!-- 3. 學習與考核頁 -->
     <div id="game-screen" class="screen">
         <div class="game-layout">
+            <!-- 左側 -->
             <div class="left-panel" id="card-panel">
-                <div class="type-badge" id="word-type">屬性：未知</div>
-                <img src="" alt="Vocabulary Image" class="word-image" id="card-image" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg'">
-                <div class="word-display" id="card-name">準備</div>
+                <div class="word-emoji" id="card-emoji">🍎</div>
+                <div class="word-display" id="card-name">蘋果</div>
                 
-                <div class="stat-container">
-                    <div>狀態 <span id="mastery-level" style="float:right; color: var(--poke-blue);">Lv. 0</span></div>
-                    <div class="stat-bar-bg"><div class="stat-bar-fill" id="prog-bar"></div></div>
-                </div>
+                <button class="btn-learn" onclick="playVoice()">🔊 聽下點讀</button>
                 
-                <button class="btn-learn" onclick="playVoice()" style="background: var(--poke-blue);">🔊 聽取發音</button>
-                <button class="btn-learn" id="btn-next" onclick="nextPracticeWord()" style="background: var(--poke-green);">⏭️ 睇下一個字</button>
-                <button class="btn-learn" id="btn-start-test" onclick="startAssessment()" style="background: var(--poke-red); display: none;">⚔️ 開始聲控考核！</button>
+                <button class="btn-mic" id="mic-btn" onclick="startListening()">🎤</button>
+                <div style="margin-top:15px; font-weight:bold; color:#666; text-align:center;" id="mic-status">撳個咪，大聲讀出中文字！</div>
                 
-                <button class="btn-mic" id="mic-btn" onclick="startListening()" style="display: none;">🎤</button>
-                <div style="margin-top:10px; font-weight:bold; color:#666; display: none; font-size:0.9rem;" id="mic-status">大聲讀出嚟！</div>
+                <div class="progress-bar"><div class="progress-fill" id="prog-bar"></div></div>
             </div>
 
+            <!-- 右側 -->
             <div class="right-panel">
                 <div class="mystery-box">
                     <div class="mystery-bg"></div>
                     <img src="" alt="Target Pokemon" class="target-pokemon" id="mystery-poke">
                 </div>
+                
                 <div class="rocket-panel">
                     <div class="rocket-img"></div>
-                    <div class="rocket-dialogue" id="rocket-text">既然你誠心誠意咁發問... 就開始練習先啦！</div>
+                    <div class="rocket-dialogue" id="rocket-text">既然你誠心誠意咁發問... 就大聲讀出嚟聽下！</div>
                 </div>
             </div>
         </div>
@@ -186,95 +178,75 @@
 
     <div class="flash-overlay" id="flash-bg"></div>
 
-    <!-- 解鎖畫面 -->
+    <!-- 4. 自訂解鎖成功畫面 -->
     <div class="success-modal" id="success-modal">
         <div class="modal-content">
-            <h2 style="color: gold; margin-top: 0; font-size: 1.8rem;" id="modal-title">精靈球，去吧！</h2>
-            <div class="capture-scene" id="capture-scene">
-                <img src="" class="anim-pokemon" id="anim-pokemon">
-                <div class="anim-pokeball" id="anim-pokeball"></div>
-            </div>
-            <div id="success-result" style="display:none;">
-                <img src="" alt="Unlocked" class="modal-img" id="modal-reward-img">
-                <h3 style="font-size: 1.2rem; margin: 10px 0;">收服咗【<span id="modal-reward-name" style="color: var(--poke-blue);"></span>】！</h3>
-                <button class="modal-btn" onclick="closeSuccessModal()">返回圖鑑</button>
-            </div>
+            <h2 style="color: gold; margin-top: 0; font-size: 2rem;">解鎖成功！</h2>
+            <img src="" alt="Unlocked" class="modal-img" id="modal-reward-img">
+            <h3 style="font-size: 1.5rem;">你收服咗【<span id="modal-reward-name"></span>】！</h3>
+            <button class="modal-btn" onclick="closeSuccessModal()">返回圖鑑</button>
         </div>
     </div>
 
     <script>
+        // --- 廣東話語音辨識 ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
-            recognition.lang = 'zh-HK'; 
+            recognition.lang = 'zh-HK';
             recognition.interimResults = false;
             recognition.maxAlternatives = 1;
         } else {
-            // iOS Chrome 唔支援會彈呢句
-            alert("注意：你嘅設備或瀏覽器(例如 iPhone Chrome)可能唔支援語音辨識，建議用 Safari 或 Android Chrome 進行考核！");
+            alert("你嘅瀏覽器唔支援語音辨識，請用 Google Chrome！");
         }
 
-        const typeColors = {
-            '火': '#F08030', '水': '#6890F0', '草': '#78C850', '電': '#F8D030',
-            '冰': '#98D8D8', '格鬥': '#C03028', '毒': '#A040A0', '地面': '#E0C068',
-            '飛行': '#A890F0', '超能力': '#F85888', '蟲': '#A8B820', '岩石': '#B8A038',
-            '幽靈': '#705898', '龍': '#7038F8', '惡': '#705848', '鋼': '#B8B8D0',
-            '妖精': '#EE99AC', '一般': '#A8A878'
-        };
-
+        // --- 數據庫 ---
         const vocabDB = {
             1: { 
-                areaName: '食物區', rewardName: '小火龍', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png', pokeType: '火',
-                words: [
-                    { word: '蘋果', img: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg' }, 
-                    { word: '香蕉', img: 'https://upload.wikimedia.org/wikipedia/commons/8/8a/Banana-Single.jpg' },
-                    { word: '士多啤梨', img: 'https://upload.wikimedia.org/wikipedia/commons/2/29/PerfectStrawberry.jpg' }
-                ]
+                name: '食物區', rewardName: '小火龍', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/4.png',
+                words: [{ word: '蘋果', emoji: '🍎' }, { word: '香蕉', emoji: '🍌' }, { word: '西瓜', emoji: '🍉' }]
             },
             2: { 
-                areaName: '交通區', rewardName: '車厘龜', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png', pokeType: '水',
-                words: [
-                    { word: '巴士', img: 'https://upload.wikimedia.org/wikipedia/commons/6/63/LT_471_%28LTZ_1471%29_Arriva_London_New_Routemaster_%2819522859218%29.jpg' }, 
-                    { word: '飛機', img: 'https://upload.wikimedia.org/wikipedia/commons/c/c9/Cathay_Pacific_Boeing_777-300_B-HNE.jpg' },
-                    { word: '火車', img: 'https://upload.wikimedia.org/wikipedia/commons/3/30/MTR_Rotem_EMU.jpg' }
-                ]
+                name: '交通區', rewardName: '車厘龜', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/7.png',
+                words: [{ word: '巴士', emoji: '🚌' }, { word: '飛機', emoji: '✈️' }, { word: '單車', emoji: '🚲' }]
             },
             3: { 
-                areaName: '自然區', rewardName: '奇異種子', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png', pokeType: '草',
-                words: [
-                    { word: '太陽', img: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg' }, 
-                    { word: '月亮', img: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/FullMoon2010.jpg' },
-                    { word: '星星', img: 'https://upload.wikimedia.org/wikipedia/commons/6/62/Starsinthesky.jpg' }
-                ]
+                name: '自然區', rewardName: '奇異種子', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png',
+                words: [{ word: '太陽', emoji: '☀️' }, { word: '月亮', emoji: '🌙' }, { word: '星星', emoji: '⭐' }]
+            },
+            4: {
+                name: '動物區', rewardName: '比卡超', rewardImg: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png',
+                words: [{ word: '貓', emoji: '🐱' }, { word: '狗', emoji: '🐶' }, { word: '兔', emoji: '🐰' }]
             }
         };
-        for(let i=4; i<=10; i++) { vocabDB[i] = vocabDB[1]; } 
+        for(let i=5; i<=8; i++) { vocabDB[i] = vocabDB[1]; } 
 
         let unlockedLevels = 1;
         let currentLevel = 1;
         let questionIndex = 0;
         let currentLevelData = null;
-        let isPracticeMode = true;
 
+        // --- 導航 ---
         function navTo(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             if(screenId === 'level-screen') renderLevels();
             document.getElementById('mystery-poke').classList.remove('revealed');
-            window.scrollTo(0, 0); // 確保切換頁面時回到頂部
         }
 
+        // --- 渲染關卡 ---
         function renderLevels() {
             const grid = document.getElementById('level-grid');
             grid.innerHTML = '';
-            for (let i = 1; i <= 10; i++) {
+            for (let i = 1; i <= 8; i++) {
                 const isUnlocked = i <= unlockedLevels;
                 const imgUrl = vocabDB[i].rewardImg;
-                const area = vocabDB[i].areaName;
+                const areaName = vocabDB[i].name || `區域 ${i}`;
+                
                 grid.innerHTML += `
                     <div class="level-card ${isUnlocked ? '' : 'locked'}" onclick="if(${isUnlocked}) startLevel(${i})">
-                        <div class="level-num">${area}</div>
+                        <div class="level-num">${areaName}</div>
                         <img src="${imgUrl}" class="poke-thumb" alt="Pokemon">
                     </div>
                 `;
@@ -285,20 +257,9 @@
             currentLevel = level;
             currentLevelData = vocabDB[level];
             questionIndex = 0;
-            isPracticeMode = true;
             
-            document.getElementById('mic-btn').style.display = 'none';
-            document.getElementById('mic-status').style.display = 'none';
-            document.getElementById('btn-next').style.display = 'flex';
-            document.getElementById('btn-start-test').style.display = 'none';
-
-            const typeBadge = document.getElementById('word-type');
-            const typeColor = typeColors[currentLevelData.pokeType] || '#888';
-            typeBadge.innerText = `屬性：${currentLevelData.pokeType}`;
-            typeBadge.style.backgroundColor = typeColor;
-
             document.getElementById('mystery-poke').src = currentLevelData.rewardImg;
-            document.getElementById('rocket-text').innerText = "練習模式：聽下點讀，認住相片！";
+            document.getElementById('rocket-text').innerText = "準備好未？大聲讀出畫面嘅中文字！";
             
             navTo('game-screen');
             loadQuestion();
@@ -307,58 +268,29 @@
         function loadQuestion() {
             const data = currentLevelData.words[questionIndex];
             document.getElementById('card-name').innerText = data.word;
-            document.getElementById('card-image').src = data.img;
-            
-            if (isPracticeMode) {
-                document.getElementById('mastery-level').innerText = `練習進度 ${questionIndex + 1}/${currentLevelData.words.length}`;
-                document.getElementById('prog-bar').style.width = ((questionIndex / currentLevelData.words.length) * 100) + '%';
-            } else {
-                document.getElementById('mastery-level').innerText = `考核中... 剩 ${currentLevelData.words.length - questionIndex} 個`;
-                document.getElementById('prog-bar').style.width = ((questionIndex / currentLevelData.words.length) * 100) + '%';
-            }
+            document.getElementById('card-emoji').innerText = data.emoji;
+            document.getElementById('prog-bar').style.width = ((questionIndex / currentLevelData.words.length) * 100) + '%';
         }
 
-        function nextPracticeWord() {
-            questionIndex++;
-            if (questionIndex >= currentLevelData.words.length) {
-                document.getElementById('rocket-text').innerText = "學晒喇！準備好接受考核未？";
-                document.getElementById('btn-next').style.display = 'none';
-                document.getElementById('btn-start-test').style.display = 'flex';
-                document.getElementById('prog-bar').style.width = '100%';
-            } else {
-                loadQuestion();
-            }
-        }
-
-        function startAssessment() {
-            isPracticeMode = false;
-            questionIndex = 0;
-            document.getElementById('btn-start-test').style.display = 'none';
-            document.getElementById('btn-next').style.display = 'none';
-            document.getElementById('mic-btn').style.display = 'flex';
-            document.getElementById('mic-status').style.display = 'block';
-            document.getElementById('rocket-text').innerText = "考核開始！撳咪高峰讀出嚟！";
-            loadQuestion();
-        }
-
+        // --- 廣東話 TTS ---
         function playVoice() {
             const word = document.getElementById('card-name').innerText;
             const msg = new SpeechSynthesisUtterance(word);
             msg.lang = 'zh-HK';
             window.speechSynthesis.speak(msg);
+            document.getElementById('rocket-text').innerText = "聽清楚喇！就係咁讀！";
         }
 
+        // --- 廣東話 STT ---
         function startListening() {
-            if(!recognition) {
-                alert("你嘅設備唔支援網頁語音辨識，請轉用 Android Chrome 或桌面版 Google Chrome。");
-                return;
-            }
+            if(!recognition) return;
             const btn = document.getElementById('mic-btn');
             const status = document.getElementById('mic-status');
             
             btn.classList.add('listening');
             status.innerText = "聽緊喇... 請讀！";
             status.style.color = "var(--poke-red)";
+
             recognition.start();
 
             recognition.onresult = (event) => {
@@ -369,11 +301,11 @@
             recognition.onspeechend = () => {
                 recognition.stop();
                 btn.classList.remove('listening');
-                status.innerText = "撳多次咪高峰再讀！";
+                status.innerText = "撳個咪，大聲讀出中文字！";
                 status.style.color = "#666";
             };
 
-            recognition.onerror = () => {
+            recognition.onerror = (event) => {
                 btn.classList.remove('listening');
                 status.innerText = "收唔到音呀，再講多次？";
             };
@@ -381,8 +313,10 @@
 
         function checkAnswer(spokenWord) {
             const correctWord = currentLevelData.words[questionIndex].word;
+            
             if (spokenWord.includes(correctWord)) {
-                document.getElementById('rocket-text').innerText = `「${spokenWord}」？好嘢，命中要害！`;
+                document.getElementById('rocket-text').innerText = `「${spokenWord}」？好嘢，答啱咗！`;
+                
                 questionIndex++;
                 if (questionIndex >= currentLevelData.words.length) {
                     revealPokemon();
@@ -391,50 +325,33 @@
                 }
             } else {
                 document.getElementById('card-panel').classList.add('shake');
-                document.getElementById('rocket-text').innerText = `你講「${spokenWord}」？唔係好啱音喎！`;
+                document.getElementById('rocket-text').innerText = `你講「${spokenWord}」？唔係好啱音喎，再試下！`;
                 setTimeout(() => document.getElementById('card-panel').classList.remove('shake'), 400);
             }
         }
 
+        // --- 解鎖與自訂 UI 提示 ---
         function revealPokemon() {
-            document.getElementById('rocket-text').innerText = "上啦，精靈球！";
+            document.getElementById('rocket-text').innerText = "白洞，白色的明天在等著我們... 竟然解鎖咗？！";
             document.getElementById('flash-bg').classList.add('flash-active');
-            document.getElementById('mastery-level').innerText = `考核完成！`;
             document.getElementById('prog-bar').style.width = '100%';
 
             setTimeout(() => {
                 document.getElementById('flash-bg').classList.remove('flash-active');
                 document.getElementById('mystery-poke').classList.add('revealed');
-                setTimeout(() => { showCaptureAnimation(currentLevelData); }, 1500);
+                
+                setTimeout(() => {
+                    showSuccessModal(currentLevelData.rewardName, currentLevelData.rewardImg);
+                }, 1500);
             }, 800);
         }
 
-        function showCaptureAnimation(data) {
-            const poke = document.getElementById('anim-pokemon');
-            const ball = document.getElementById('anim-pokeball');
-            
-            poke.src = data.rewardImg;
-            poke.className = 'anim-pokemon';
-            ball.className = 'anim-pokeball';
-            
-            document.getElementById('modal-title').innerText = "精靈球，去吧！";
-            document.getElementById('capture-scene').style.display = 'block';
-            document.getElementById('success-result').style.display = 'none';
+        function showSuccessModal(name, imgUrl) {
+            document.getElementById('modal-reward-name').innerText = name;
+            document.getElementById('modal-reward-img').src = imgUrl;
             document.getElementById('success-modal').classList.add('active');
             
-            ball.classList.add('throw');
-            setTimeout(() => { poke.classList.add('suck'); }, 700);
-            setTimeout(() => { ball.classList.add('shake-catch'); }, 1100);
-            
-            setTimeout(() => {
-                document.getElementById('capture-scene').style.display = 'none';
-                document.getElementById('success-result').style.display = 'block';
-                document.getElementById('modal-title').innerText = "收服成功！";
-                document.getElementById('modal-reward-name').innerText = data.rewardName;
-                document.getElementById('modal-reward-img').src = data.rewardImg;
-                
-                if(currentLevel >= unlockedLevels && currentLevel < 10) unlockedLevels++;
-            }, 3600);
+            if(currentLevel >= unlockedLevels && currentLevel < 8) unlockedLevels++;
         }
 
         function closeSuccessModal() {
