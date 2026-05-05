@@ -3,222 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小智的識字對戰</title>
+    <title>小智的識字對戰大冒險</title>
     <style>
         :root {
             --card-yellow: #fbd743;
             --card-blue: #3e5ba9;
             --hp-green: #4caf50;
+            --bg-color: #5da9ad;
         }
 
         body {
             margin: 0;
-            background: radial-gradient(circle, #5da9ad 0%, #333 100%);
+            background: radial-gradient(circle, var(--bg-color) 0%, #222 100%);
             height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             font-family: '微軟正黑體', sans-serif;
             color: white;
             overflow: hidden;
         }
 
-        /* 小智 Buddy */
+        /* --- 頁面切換邏輯 --- */
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; }
+        .screen.active { display: flex; }
+
+        /* --- 主頁 & 關卡頁樣式 --- */
+        .title { font-size: 3rem; text-shadow: 2px 2px 5px black; margin-bottom: 20px; }
+        .btn-main { background: var(--card-yellow); color: #333; font-size: 1.5rem; padding: 15px 40px; border-radius: 30px; border: 4px solid var(--card-blue); cursor: pointer; font-weight: bold; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-main:hover { transform: scale(1.1); }
+        
+        .level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; max-width: 600px; }
+        .level-btn { width: 80px; height: 80px; font-size: 1.5rem; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; background: #ccc; color: #666; transition: 0.2s; }
+        .level-btn.unlocked { background: var(--card-blue); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
+        .level-btn.unlocked:hover { transform: translateY(-5px); background: #4a6fc2; }
+
+        /* --- 學習與考核版面 (保留 3D 與卡牌) --- */
         #ash-buddy {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            text-align: center;
-            transition: transform 0.3s;
+            position: fixed; bottom: -100px; right: 20px; text-align: center; transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .ash-sprite { font-size: 80px; } 
-        .ash-speech {
-            background: white;
-            color: black;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            position: relative;
-            font-weight: bold;
-        }
+        #ash-buddy.show { bottom: 20px; } /* 進入版面時彈出 */
+        .ash-sprite { font-size: 80px; }
+        .ash-speech { background: white; color: black; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
-        /* 寶可夢卡牌設計 */
         .pokemon-card {
-            width: 300px;
-            height: 420px;
-            background: var(--card-yellow);
-            border: 12px solid var(--card-yellow);
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            transform-style: preserve-3d;
-            transition: transform 0.1s;
-            cursor: pointer;
+            width: 300px; height: 420px; background: var(--card-yellow); border: 12px solid var(--card-yellow); border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); color: #333; display: flex; flex-direction: column; transform-style: preserve-3d; transition: transform 0.1s, filter 0.3s; cursor: pointer;
         }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 10px;
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .hp-text { color: #e91e63; font-size: 0.9rem; }
-
-        .card-image {
-            width: 90%;
-            height: 180px;
-            background: #eee;
-            margin: 0 auto;
-            border: 4px solid #888;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 4rem;
-        }
-
-        .card-body {
-            padding: 15px;
-            text-align: center;
-        }
-
-        .move-box {
-            border-top: 1px solid #ccc;
-            margin-top: 10px;
-            padding-top: 10px;
-            font-style: italic;
-        }
-
-        /* 選擇按鈕 */
-        .options {
-            margin-top: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .btn-move {
-            background: white;
-            border: 3px solid var(--card-blue);
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
+        .card-header { display: flex; justify-content: space-between; padding: 5px 10px; font-weight: bold; font-size: 1.2rem; }
+        .hp-text { color: #e91e63; }
+        .card-image { width: 90%; height: 180px; background: #eee; margin: 0 auto; border: 4px solid #888; display: flex; justify-content: center; align-items: center; font-size: 4rem; }
+        .card-body { padding: 15px; text-align: center; }
+        
+        .options { margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn-move { background: white; border: 3px solid var(--card-blue); padding: 15px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1.1rem; }
         .btn-move:hover { background: #eee; transform: scale(1.05); }
 
-        /* 進化與特效 */
+        /* 物理特效 */
         .shake { animation: shake 0.3s; }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-15px) rotate(-5deg); } 75% { transform: translateX(15px) rotate(5deg); } }
+        .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; transition: opacity 0.5s; z-index: 999; }
+        .flash-active { opacity: 1; }
 
-        .badges-gallery {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            display: flex;
-            gap: 10px;
-        }
-        .badge { width: 40px; height: 40px; filter: grayscale(1); opacity: 0.3; }
-        .badge.active { filter: grayscale(0); opacity: 1; transform: scale(1.2); }
-
+        /* 左上角返回鍵 */
+        .btn-back { position: absolute; top: 20px; left: 20px; background: transparent; color: white; border: 2px solid white; padding: 5px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .btn-back:hover { background: rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 
-    <div class="badges-gallery" id="badges">
-        <!-- 10 個勳章 -->
-        <span class="badge" id="b1">🏅</span><span class="badge" id="b2">🎖️</span>
-        <span class="badge" id="b3">🏆</span><span class="badge" id="b4">💠</span>
+    <!-- 1. 主頁 -->
+    <div id="home-screen" class="screen active">
+        <h1 class="title">Pokemon 識字對戰</h1>
+        <button class="btn-main" onclick="navTo('level-screen')">開始冒險</button>
     </div>
 
-    <div id="card-container" style="perspective: 1000px; margin-top: 50px;">
-        <div class="pokemon-card" id="main-card" onclick="playVoice()">
-            <div class="card-header">
-                <span>基礎</span>
-                <span id="card-name">Apple</span>
-                <span class="hp-text">HP <span id="hp-val">50</span></span>
-            </div>
-            <div class="card-image">🍎</div>
-            <div class="card-body">
-                <strong>[屬性：食物]</strong>
-                <div class="move-box">
-                    這是一個充滿營養的招式，點擊卡片可聆聽讀音。
-                </div>
-            </div>
+    <!-- 2. 關卡選擇頁 -->
+    <div id="level-screen" class="screen">
+        <button class="btn-back" onclick="navTo('home-screen')">🔙 返回</button>
+        <h2 style="font-size: 2rem; margin-bottom: 30px;">選擇挑戰關卡</h2>
+        <div class="level-grid" id="level-grid">
+            <!-- JavaScript 自動生成 10 個按鈕 -->
         </div>
     </div>
 
-    <div class="options">
-        <button class="btn-move" onclick="check(true)">蘋果</button>
-        <button class="btn-move" onclick="check(false)">香蕉</button>
+    <!-- 3. 學習與考核頁 -->
+    <div id="game-screen" class="screen">
+        <button class="btn-back" onclick="navTo('level-screen')">🔙 逃跑 (返回)</button>
+        <h2 id="stage-title" style="margin-bottom: 20px;">第 1 關 - 戰鬥中</h2>
+        
+        <div id="card-container" style="perspective: 1000px;">
+            <div class="pokemon-card" id="main-card" onclick="playVoice()">
+                <div class="card-header">
+                    <span>基礎</span>
+                    <span id="card-name">Apple</span>
+                    <span class="hp-text">HP <span id="hp-val">50</span></span>
+                </div>
+                <div class="card-image" id="card-emoji">🍎</div>
+                <div class="card-body">
+                    <strong id="card-type">[屬性：食物]</strong>
+                    <div class="move-box" style="margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px;">
+                        點擊卡片可聆聽英文讀音。請選擇正確的中文解釋。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="options" id="options-container">
+            <!-- 按鈕由 JS 生成 -->
+        </div>
+
+        <div id="ash-buddy">
+            <div class="ash-speech" id="ash-text">就決定係你喇！</div>
+            <div class="ash-sprite">👦🏻</div>
+        </div>
     </div>
 
-    <div id="ash-buddy">
-        <div class="ash-speech" id="ash-text">準備好戰鬥未？</div>
-        <div class="ash-sprite">👦🏻</div>
-    </div>
+    <div class="flash-overlay" id="flash-bg"></div>
 
     <script>
+        // --- 數據庫 (每個 Level 5 題) ---
+        const vocabDB = {
+            1: [
+                { en: 'Apple', zh: '蘋果', wrong: ['香蕉'], emoji: '🍎', type: '食物' },
+                { en: 'Banana', zh: '香蕉', wrong: ['蘋果'], emoji: '🍌', type: '食物' },
+                { en: 'Cat', zh: '貓', wrong: ['狗'], emoji: '🐱', type: '動物' },
+                { en: 'Dog', zh: '狗', wrong: ['貓'], emoji: '🐶', type: '動物' },
+                { en: 'Sun', zh: '太陽', wrong: ['月亮'], emoji: '☀️', type: '自然' }
+            ],
+            2: [
+                { en: 'Car', zh: '汽車', wrong: ['巴士'], emoji: '🚗', type: '交通' },
+                { en: 'Bus', zh: '巴士', wrong: ['汽車'], emoji: '🚌', type: '交通' },
+                { en: 'Fish', zh: '魚', wrong: ['鳥'], emoji: '🐟', type: '動物' },
+                { en: 'Bird', zh: '鳥', wrong: ['魚'], emoji: '🐦', type: '動物' },
+                { en: 'Moon', zh: '月亮', wrong: ['太陽'], emoji: '🌙', type: '自然' }
+            ]
+        };
+
+        // 為 3-10 關自動填充假數據，防止報錯
+        for(let i=3; i<=10; i++) { vocabDB[i] = vocabDB[1]; } 
+
+        // --- 遊戲狀態 ---
+        let unlockedLevels = 1; // 目前解鎖到第幾關
+        let currentLevel = 1;
+        let questionIndex = 0;
+        let currentLevelData = [];
         let hp = 50;
-        let level = 1;
 
-        // 3D 傾斜效果
-        const card = document.getElementById('main-card');
-        document.addEventListener('mousemove', (e) => {
-            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
-            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
-            card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
-        });
+        // --- 1. 導航邏輯 ---
+        function navTo(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
 
-        // 語音功能
-        function playVoice() {
-            const msg = new SpeechSynthesisUtterance(document.getElementById('card-name').innerText);
-            msg.lang = 'en-US';
-            window.speechSynthesis.speak(msg);
+            if(screenId === 'level-screen') renderLevels();
+            
+            // 進入遊戲畫面時彈出小智
+            const ash = document.getElementById('ash-buddy');
+            if(screenId === 'game-screen') {
+                setTimeout(() => ash.classList.add('show'), 100);
+            } else {
+                ash.classList.remove('show');
+            }
         }
 
-        // 檢查答案邏輯
-        function check(isCorrect) {
+        // --- 2. 渲染關卡選擇 ---
+        function renderLevels() {
+            const grid = document.getElementById('level-grid');
+            grid.innerHTML = '';
+            for (let i = 1; i <= 10; i++) {
+                const btn = document.createElement('button');
+                btn.className = `level-btn ${i <= unlockedLevels ? 'unlocked' : ''}`;
+                btn.innerText = i;
+                if (i <= unlockedLevels) {
+                    btn.onclick = () => startLevel(i);
+                } else {
+                    btn.onclick = () => alert("請先完成前面嘅關卡！");
+                }
+                grid.appendChild(btn);
+            }
+        }
+
+        // --- 3. 開始關卡 & 載入題目 ---
+        function startLevel(level) {
+            currentLevel = level;
+            currentLevelData = vocabDB[level];
+            questionIndex = 0;
+            hp = 50;
+            document.getElementById('stage-title').innerText = `第 ${level} 關 - 戰鬥中`;
+            navTo('game-screen');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const data = currentLevelData[questionIndex];
+            document.getElementById('card-name').innerText = data.en;
+            document.getElementById('card-emoji').innerText = data.emoji;
+            document.getElementById('card-type').innerText = `[屬性：${data.type}]`;
+            document.getElementById('hp-val').innerText = hp;
+            document.getElementById('ash-text').innerText = questionIndex === 0 ? "準備好未？開始啦！" : "下一個對手出現！";
+            
+            // 隨機打亂按鈕
+            const options = [data.zh, ...data.wrong].sort(() => Math.random() - 0.5);
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-move';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt === data.zh);
+                container.appendChild(btn);
+            });
+        }
+
+        // --- 4. 檢查答案與物理特效 ---
+        const card = document.getElementById('main-card');
+        function checkAnswer(isCorrect) {
             if (isCorrect) {
                 hp -= 10;
                 document.getElementById('hp-val').innerText = hp;
-                document.getElementById('ash-text').innerText = "好嘢！效果超群！";
+                document.getElementById('ash-text').innerText = "效果超群！擊中要害！";
                 
                 if (hp <= 0) {
-                    evolve();
+                    evolveAndNextLevel(); // 修正：過關後不再卡死
+                } else {
+                    questionIndex++;
+                    setTimeout(loadQuestion, 800);
                 }
             } else {
+                // 答錯震動
                 card.classList.add('shake');
-                document.getElementById('ash-text').innerText = "哎呀！仲差少少！";
-                if (window.navigator.vibrate) window.navigator.vibrate(200); // 手機震動回饋
+                document.getElementById('ash-text').innerText = "哎呀！唔啱喎，再試下！";
+                if (window.navigator.vibrate) window.navigator.vibrate(200); 
                 setTimeout(() => card.classList.remove('shake'), 300);
             }
         }
 
-        // 進化動畫與重置
-        function evolve() {
-            document.getElementById('ash-text').innerText = "咩話？字詞正在進化！";
-            const badge = document.getElementById('b' + level);
-            if(badge) badge.classList.add('active'); 
-            
+        // --- 5. 過關邏輯 (修復重點) ---
+        function evolveAndNextLevel() {
+            document.getElementById('ash-text').innerText = "太勁啦！成功通關！";
             card.style.filter = "brightness(3)";
+            document.getElementById('flash-bg').classList.add('flash-active');
+
             setTimeout(() => {
-                level++;
-                hp = 50;
-                document.getElementById('hp-val').innerText = hp;
+                // 1. 解鎖下一關
+                if(currentLevel >= unlockedLevels && currentLevel < 10) {
+                    unlockedLevels++;
+                }
+                // 2. 恢復特效
                 card.style.filter = "brightness(1)";
-                alert("恭喜！你收服咗呢個等級嘅所有生字！");
-                document.getElementById('ash-text').innerText = "下一個對手出現喇！";
-            }, 1000);
+                document.getElementById('flash-bg').classList.remove('flash-active');
+                
+                // 3. 彈出提示並返回關卡頁 (解決停在原地問題)
+                alert(`恭喜！你收服咗第 ${currentLevel} 關嘅所有生字！`);
+                navTo('level-screen');
+            }, 1200);
+        }
+
+        // --- 6. 3D 傾斜效果 & 語音 ---
+        document.addEventListener('mousemove', (e) => {
+            if(document.getElementById('game-screen').classList.contains('active')) {
+                const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+                const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+                card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+            }
+        });
+
+        function playVoice() {
+            const msg = new SpeechSynthesisUtterance(document.getElementById('card-name').innerText);
+            msg.lang = 'en-US';
+            window.speechSynthesis.speak(msg);
         }
     </script>
 </body>
