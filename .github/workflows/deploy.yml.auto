@@ -1,0 +1,21 @@
+name: Deploy to Firebase Hosting on Merge
+on:
+  push:
+    branches:
+      - main  # 當你 push 到 main branch 時觸發
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      # 如果你有用 npm 裝嘢，呢度可以加 npm install
+      # 但因為我哋用緊 Single HTML，所以可以直接跳去 deploy
+
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: pokemon-vocab-app # <--- ！！！呢度一定要改返做你真正嘅 Project ID
